@@ -1,13 +1,16 @@
 
 /* ==========================================================================
-   Atualizador de Promoções — estilos
-   Para mudar o visual, comece pelas variáveis em :root (cores, fonte, raios).
-   O tema escuro pode ser personalizado em :root[data-theme="dark"].
+   Atualizador de Promoções
+   Layout responsivo e temas claro/escuro.
    ========================================================================== */
 
-/* Tema claro */
+/* 1. Variáveis e temas
+   ========================================================================== */
+
 :root {
   color-scheme: light;
+
+  /* Cores */
   --color-bg: #ffffff;
   --color-text: #242424;
   --color-muted: #777777;
@@ -24,17 +27,28 @@
   --color-warning-bg: #f0ede7;
   --color-warning-text: #665c4e;
 
-  /* Forma */
-  --radius: 0.5rem;
-  --font: "Source Sans Pro", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Layout */
   --page-width: 46rem;
-}
+  --page-top-spacing: 20rem;
+  --radius: 0.5rem;
 
-/* Tema escuro --------------------------------------------------------------- */
-/* Paleta monocromática inspirada em tons de preto, branco e cinza. */
+  --font: "Source Sans Pro", system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Espaçamentos */
+  --page-padding-x: 1.25rem;
+  --page-padding-y: 2rem;
+
+  /* Textarea */
+  --input-font-size: 0.9rem;
+  --input-padding: 0.75rem;
+  --input-line-height: 1.5;
+  --input-max-lines: 13;
+}
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+
   --color-bg: #212121;
   --color-text: #ededed;
   --color-muted: #a0a0a0;
@@ -43,7 +57,6 @@
   --color-input-bg: #303030;
   --color-border: #424242;
 
-  /* Mensagens */
   --color-success-bg: #303030;
   --color-success-text: #e0e0e0;
   --color-error-bg: #482e2e;
@@ -52,68 +65,106 @@
   --color-warning-text: #e5ddd2;
 }
 
-/* Configurações gerais ------------------------------------------------------- */
+/* 2. Configurações gerais
+   ========================================================================== */
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  min-height: 100%;
+}
+
 body {
+  min-width: 320px;
+  min-height: 100vh;
   margin: 0;
+
   background: var(--color-bg);
   color: var(--color-text);
+
   font-family: var(--font);
   font-size: 1rem;
   line-height: 1.5;
 
-  /* Transição suave entre os temas */
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-/* Layout -------------------------------------------------------------------- */
+/* 3. Layout principal
+   ========================================================================== */
 
 .page {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+
+  width: 100%;
   max-width: var(--page-width);
+  min-height: 100vh;
+
   margin: 0 auto;
-  padding: 5rem 1.25rem 3rem;
+
+  /* Mantém o início do conteúdo em uma posição fixa. */
+  padding:
+    var(--page-top-spacing)
+    var(--page-padding-x)
+    var(--page-padding-y);
 }
 
-/* Cabeçalho ----------------------------------------------------------------- */
-/* Organiza o título e o botão de alternância de tema na mesma linha. */
+/* 4. Cabeçalho
+   ========================================================================== */
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+
   margin-bottom: 1rem;
 }
 
 .title {
+  min-width: 0;
   margin: 0;
+
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.2;
 }
 
-/* Botão de alternância de tema ---------------------------------------------- */
-/* Permite alternar entre o tema claro e o tema escuro. */
+/* 5. Botão de alternância de tema
+   ========================================================================== */
 
 .theme-toggle {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+
   min-width: 2.5rem;
   min-height: 2.5rem;
   padding: 0.5rem 0.75rem;
+
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
+
   background: var(--color-input-bg);
   color: var(--color-text);
+
   font: inherit;
   font-size: 1rem;
+
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .theme-toggle:hover {
@@ -125,29 +176,92 @@ body {
   outline-offset: 2px;
 }
 
-/* Campo de texto ------------------------------------------------------------ */
+/* Área de movimentação dos ícones */
+
+.theme-icon-viewport {
+  position: relative;
+
+  display: block;
+  flex-shrink: 0;
+
+  width: 1.5rem;
+  height: 1.5rem;
+
+  overflow: hidden;
+}
+
+/* Ícones sobrepostos */
+
+.theme-icon {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  font-size: 1rem;
+  line-height: 1;
+
+  will-change: transform, opacity;
+}
+
+/* Ícone visível */
+
+.theme-icon.is-visible {
+  opacity: 1;
+  transform: translate(0, 0);
+
+  transition:
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 450ms ease;
+}
+
+/* Ícone oculto */
+
+.theme-icon.is-hidden {
+  opacity: 0;
+  transform: translate(-130%, -100%);
+  pointer-events: none;
+  transition: none;
+}
+
+/* 6. Campo de texto
+   ========================================================================== */
 
 .input {
   display: block;
+
   width: 100%;
-  height: 25rem;
-  padding: 0.75rem;
+  min-height: 2.75rem;
+  max-height: calc(19.5em + 1.5rem + 2px);
+
+  padding: var(--input-padding);
+
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
+
   background: var(--color-input-bg);
   color: inherit;
-  font: inherit;
-  font-size: 0.9rem;
-  resize: vertical;
+
+  font-family: inherit;
+  font-size: var(--input-font-size);
+  line-height: var(--input-line-height);
+
+  resize: none;
   tab-size: 4;
 
-  /* Sem quebra automática: cada linha visual é uma linha real
-     (bate com os números dos erros). */
+  /* Preserva a estrutura dos dados SQL colados. */
   white-space: pre;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
 
-  /* Transição suave de cores ao alternar o tema */
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .input::placeholder {
@@ -159,13 +273,15 @@ body {
   border-color: var(--color-primary);
 }
 
-/* Grupo de botões de exportação --------------------------------------------- */
-/* Mantém os botões Excel e PDF alinhados e com espaçamento uniforme. */
+/* 7. Botões de exportação
+   ========================================================================== */
 
 .actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-start;
   gap: 0.75rem;
+
   margin-top: 1rem;
 }
 
@@ -174,19 +290,27 @@ body {
   margin-top: 0;
 }
 
-/* Botões -------------------------------------------------------------------- */
+/* 8. Botões
+   ========================================================================== */
 
 .button {
   margin-top: 1rem;
-  padding: 0.5rem 0.9rem;
+  padding: 0.65rem 0.9rem;
+
   border: 0;
   border-radius: var(--radius);
+
   background: var(--color-primary);
   color: var(--color-bg);
+
   font: inherit;
   font-size: 0.9rem;
+
   cursor: pointer;
-  transition: background-color 0.2s ease;
+
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
@@ -203,12 +327,15 @@ body {
   cursor: not-allowed;
 }
 
-/* Mensagens ----------------------------------------------------------------- */
+/* 9. Mensagens
+   ========================================================================== */
 
 .message {
   margin-top: 1rem;
   padding: 1rem;
+
   border-radius: var(--radius);
+  overflow-wrap: anywhere;
 }
 
 .message p,
@@ -243,36 +370,129 @@ body {
   color: var(--color-warning-text);
 }
 
-/* Link de reserva do download ----------------------------------------------- */
+/* 10. Link alternativo de download
+   ========================================================================== */
 
 .fallback {
   display: inline-block;
+
+  max-width: 100%;
   margin-top: 1rem;
+
   color: var(--color-muted);
   font-size: 0.875rem;
+
+  overflow-wrap: anywhere;
 }
 
-/* Responsividade ------------------------------------------------------------ */
-/* Ajusta o espaçamento do conteúdo em telas menores. */
+/* 11. Notebooks e telas intermediárias
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  :root {
+    --page-padding-y: 1.5rem;
+    --page-top-spacing: 20rem;
+  }
+}
+
+/* 12. Tablets e celulares
+   ========================================================================== */
 
 @media (max-width: 600px) {
+  :root {
+    --page-padding-x: 1rem;
+    --page-padding-y: 2rem;
+    --page-top-spacing: 2rem;
+  }
+
   .page {
-    padding: 2.5rem 1rem 2rem;
+    justify-content: flex-start;
+
+    padding:
+      var(--page-top-spacing)
+      var(--page-padding-x)
+      var(--page-padding-y);
+  }
+
+  .header {
+    gap: 0.75rem;
   }
 
   .title {
     font-size: 1.3rem;
   }
 
+  /* Altura fixa de aproximadamente 5 linhas no celular. */
   .input {
-    height: 22rem;
+    height: calc(7.5em + 1.5rem + 2px);
+    min-height: calc(7.5em + 1.5rem + 2px);
+    max-height: calc(7.5em + 1.5rem + 2px);
+
+    overflow-y: auto;
   }
 
   .actions {
     flex-direction: column;
+    gap: 0.65rem;
   }
 
   .actions .button {
+    flex: none;
+
     width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+  }
+}
+
+/* 13. Celulares pequenos
+   ========================================================================== */
+
+@media (max-width: 380px) {
+  :root {
+    --page-padding-x: 0.75rem;
+    --page-padding-y: 1.5rem;
+    --page-top-spacing: 1.5rem;
+
+    --input-font-size: 0.85rem;
+    --input-padding: 0.6rem;
+  }
+
+  .header {
+    align-items: flex-start;
+  }
+
+  .title {
+    font-size: 1.15rem;
+  }
+
+  .theme-toggle {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0.4rem 0.55rem;
+  }
+
+  .input {
+    height: calc(7.5em + 1.2rem + 2px);
+    min-height: calc(7.5em + 1.2rem + 2px);
+    max-height: calc(7.5em + 1.2rem + 2px);
+  }
+
+  .message {
+    padding: 0.75rem;
+  }
+}
+
+/* 14. Acessibilidade: movimento reduzido
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

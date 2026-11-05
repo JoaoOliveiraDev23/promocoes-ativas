@@ -12,7 +12,7 @@ function formatDate(date: PromoRecord["dataInicial"]): string {
   const month = String(date.month).padStart(2, "0");
   const day = String(date.day).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
+  return `${day}-${month}-${year}`;
 }
 
 /**
@@ -113,7 +113,7 @@ export function exportPromotionsPdf(
       doc.setFontSize(8);
       doc.setTextColor(110, 110, 110);
       doc.text(
-        `Gerado em ${new Date().toLocaleDateString("pt-BR")}`,
+        `Consulta realizada em: ${new Date().toLocaleDateString("pt-BR")}`,
         margin.left,
         16
       );

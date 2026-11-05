@@ -36,6 +36,7 @@ export default function App() {
   });
   const [feedback, setFeedback] = useState<Feedback>(null);
   const currentUrl = useRef<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Tema --------------------------------------------------------------------
 
@@ -232,7 +233,23 @@ export default function App() {
               : "Ativar tema claro"
           }
         >
-          {theme === "light" ? "🌙" : "☀️"}
+          <span className="theme-icon-viewport" aria-hidden="true">
+            <span
+              className={`theme-icon theme-icon-moon ${
+                theme === "dark" ? "is-visible" : "is-hidden"
+              }`}
+            >
+              🌙
+            </span>
+            
+            <span
+              className={`theme-icon theme-icon-sun ${
+                theme === "light" ? "is-visible" : "is-hidden"
+              }`}
+            >
+              ☀️
+            </span>
+          </span>
         </button>
       </header>
 
@@ -246,14 +263,46 @@ export default function App() {
 
       {/* Campo para inserir os dados da consulta SQL Server */}
       <textarea
+        ref={textareaRef}
         className="input"
         id="input"
         aria-label="Resultado da consulta SQL Server"
         placeholder="Cole aqui o resultado da consulta SQL Server"
         value={text}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => {
+          handleChange(e.target.value);
+        
+          const textarea = e.target;
+        
+          // No celular, mantém a altura definida pelo CSS.
+          if (window.matchMedia("(max-width: 600px)").matches) {
+            textarea.style.height = "";
+            textarea.style.overflowY = "auto";
+            return;
+          }
+        
+          // No desktop, permite o crescimento automático.
+          textarea.style.height = "auto";
+        
+          const maxHeight = parseFloat(
+            getComputedStyle(textarea).maxHeight
+          );
+        
+          const contentHeight = textarea.scrollHeight;
+        
+          // Limita o crescimento à altura máxima definida no CSS.
+          textarea.style.height = `${Math.min(
+            contentHeight,
+            maxHeight
+          )}px`;
+        
+          // Exibe a rolagem vertical somente quando necessário.
+          textarea.style.overflowY =
+            contentHeight > maxHeight ? "auto" : "hidden";
+        }}
         spellCheck={false}
         wrap="off"
+        rows={1}
       />
 
       {/* Botões de geração e download */}
@@ -264,7 +313,7 @@ export default function App() {
           onClick={handleGenerate}
           disabled={template.status !== "ready"}
         >
-          Gerar e baixar Excel
+          Exportar em Excel
         </button>
 
         <button
@@ -272,7 +321,7 @@ export default function App() {
           type="button"
           onClick={handleGeneratePdf}
         >
-          Gerar e baixar PDF
+          Exportar em PDF
         </button>
       </div>
 
