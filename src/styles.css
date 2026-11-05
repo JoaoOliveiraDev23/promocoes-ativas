@@ -403,6 +403,9 @@ body {
     --page-padding-x: 1rem;
     --page-padding-y: 2rem;
     --page-top-spacing: 2rem;
+
+    /* Evita o zoom automático ao selecionar a textarea. */
+    --input-font-size: 1rem;
   }
 
   .page {
@@ -454,7 +457,6 @@ body {
     --page-padding-y: 1.5rem;
     --page-top-spacing: 1.5rem;
 
-    --input-font-size: 0.85rem;
     --input-padding: 0.6rem;
   }
 
