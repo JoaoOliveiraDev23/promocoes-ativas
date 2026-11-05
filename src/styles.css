@@ -1,13 +1,13 @@
+
 /* ==========================================================================
    Atualizador de Promoções — estilos
    Para mudar o visual, comece pelas variáveis em :root (cores, fonte, raios).
    O tema escuro pode ser personalizado em :root[data-theme="dark"].
    ========================================================================== */
 
+/* Tema claro */
 :root {
-  /* Tema claro */
   color-scheme: light;
-
   --color-bg: #ffffff;
   --color-text: #242424;
   --color-muted: #777777;
@@ -35,7 +35,6 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-
   --color-bg: #212121;
   --color-text: #ededed;
   --color-muted: #a0a0a0;
@@ -142,7 +141,8 @@ body {
   resize: vertical;
   tab-size: 4;
 
-  /* Sem quebra automática: cada linha visual é uma linha real (bate com os números dos erros). */
+  /* Sem quebra automática: cada linha visual é uma linha real
+     (bate com os números dos erros). */
   white-space: pre;
   overflow: auto;
 
@@ -159,7 +159,22 @@ body {
   border-color: var(--color-primary);
 }
 
-/* Botão --------------------------------------------------------------------- */
+/* Grupo de botões de exportação --------------------------------------------- */
+/* Mantém os botões Excel e PDF alinhados e com espaçamento uniforme. */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.actions .button {
+  flex: 1 1 10rem;
+  margin-top: 0;
+}
+
+/* Botões -------------------------------------------------------------------- */
 
 .button {
   margin-top: 1rem;
@@ -251,5 +266,13 @@ body {
 
   .input {
     height: 22rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions .button {
+    width: 100%;
   }
 }

@@ -6,3 +6,8 @@ export function buildOutputFilename(when: Date = new Date()): string {
   const mm = String(when.getMonth() + 1).padStart(2, "0");
   return `${OUTPUT_PREFIX} ${dd}-${mm}-${when.getFullYear()}.xlsx`;
 }
+
+/** PROMOCOES-ATIVAS DD-MM-AAAA.pdf com a data LOCAL de geração. */
+export function buildPdfFilename(when: Date = new Date()): string {
+  return buildOutputFilename(when).replace(/\.xlsx$/i, ".pdf");
+}
