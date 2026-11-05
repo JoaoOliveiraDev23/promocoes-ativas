@@ -1,0 +1,23 @@
+# Blueprint do Render (Static Site). Alternativa: criar o serviço pelo painel com os mesmos valores:
+#   Build Command:      npm ci && npm run build
+#   Publish Directory:  dist
+services:
+  - type: web
+    name: atualizador-promocoes
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex, nofollow
+      # O modelo é revalidado a cada acesso (trocar o arquivo e publicar vale imediatamente).
+      - path: /PROMOCOES-ATIVAS-modelo.xlsx
+        name: Cache-Control
+        value: no-cache

@@ -1,0 +1,155 @@
+/* ==========================================================================
+   Atualizador de Promoções — estilos
+   Para mudar o visual, comece pelas variáveis em :root (cores, fonte, raios).
+   ========================================================================== */
+
+:root {
+  /* Tema */
+  --color-bg: #ffffff;
+  --color-text: #31333f;
+  --color-muted: #808495;
+  --color-primary: #2e5bff;
+  --color-primary-hover: #0033e6;
+  --color-input-bg: #f0f2f6;
+
+  --color-success-bg: #e6f7ec;
+  --color-success-text: #177233;
+  --color-error-bg: #ffe8e8;
+  --color-error-text: #8a2f35;
+  --color-warning-bg: #fff8d6;
+  --color-warning-text: #7a5b00;
+
+  /* Forma */
+  --radius: 0.5rem;
+  --font: "Source Sans Pro", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --page-width: 46rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Layout ------------------------------------------------------------------ */
+.page {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 5rem 1.25rem 3rem;
+}
+
+.title {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Campo de texto ------------------------------------------------------------ */
+.input {
+  display: block;
+  width: 100%;
+  height: 25rem;
+  padding: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--color-input-bg);
+  color: inherit;
+  font: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  tab-size: 4;
+  /* Sem quebra automática: cada linha visual é uma linha real (bate com os números dos erros). */
+  white-space: pre;
+  overflow: auto;
+}
+
+.input::placeholder {
+  color: var(--color-muted);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Botão --------------------------------------------------------------------- */
+.button {
+  margin-top: 1rem;
+  padding: 0.5rem 0.9rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mensagens ------------------------------------------------------------------ */
+.message {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius);
+}
+
+.message p,
+.message ul {
+  margin: 0;
+}
+
+.message p + ul {
+  margin-top: 0.5rem;
+}
+
+.message ul {
+  padding-left: 1.25rem;
+}
+
+.message li + li {
+  margin-top: 0.35rem;
+}
+
+.message--success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.message--error {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+.message--warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+/* Link de reserva do download --------------------------------------------------- */
+.fallback {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
