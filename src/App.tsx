@@ -21,18 +21,52 @@ export default function App() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const currentUrl = useRef<string | null>(null);
 
+  // Tema --------------------------------------------------------------------
+
+  // Recupera a preferência de tema salva no navegador.
+  // Caso não exista uma preferência anterior, utiliza o tema claro.
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    const savedTheme = localStorage.getItem("theme");
+  
+    return savedTheme === "light" ? "light" : "dark";
+  });
+
+  // Aplica o tema selecionado e salva a preferência no navegador.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // Alterna entre o tema claro e o tema escuro.
+  function handleThemeToggle() {
+    setTheme((currentTheme) =>
+      currentTheme === "light" ? "dark" : "light"
+    );
+  }
+
+  // Modelo interno ----------------------------------------------------------
+
   // Carrega o modelo interno uma vez.
   useEffect(() => {
     let cancelled = false;
+
     loadTemplate()
       .then((bytes) => !cancelled && setTemplate({ status: "ready", bytes }))
       .catch((err: unknown) => {
-        if (!cancelled) setTemplate({ status: "error", message: err instanceof Error ? err.message : "Erro ao carregar o modelo." });
+        if (!cancelled) {
+          setTemplate({
+            status: "error",
+            message: err instanceof Error ? err.message : "Erro ao carregar o modelo."
+          });
+        }
       });
+
     return () => {
       cancelled = true;
     };
   }, []);
+
+  // Download ----------------------------------------------------------------
 
   // Libera o arquivo temporário do navegador ao sair.
   useEffect(() => () => releaseUrl(), []);
@@ -42,47 +76,108 @@ export default function App() {
     currentUrl.current = null;
   }
 
+  // Entrada de dados --------------------------------------------------------
+
   function handleChange(value: string) {
     setText(value);
+
     if (feedback) {
       releaseUrl();
       setFeedback(null); // editar o texto limpa a mensagem anterior
     }
   }
 
+  // Geração da planilha -----------------------------------------------------
+
   function handleGenerate() {
     if (template.status !== "ready") return;
+
     releaseUrl();
+
     try {
       const result = generateWorkbook(text, template.bytes);
       const url = createDownloadUrl(result.data);
+
       currentUrl.current = url;
+
       startDownload(url, result.filename);
-      setFeedback({ kind: "success", filename: result.filename, count: result.recordCount, url, warnings: result.warnings });
+
+      setFeedback({
+        kind: "success",
+        filename: result.filename,
+        count: result.recordCount,
+        url,
+        warnings: result.warnings
+      });
     } catch (exc) {
       if (exc instanceof InvalidInput) {
         const items = [...exc.lines];
-        if (exc.total > exc.lines.length) items.push(`… e mais ${exc.total - exc.lines.length} erro(s).`);
-        setFeedback({ kind: "error", heading: "Não foi possível gerar a planilha:", items });
+
+        if (exc.total > exc.lines.length) {
+          items.push(`… e mais ${exc.total - exc.lines.length} erro(s).`);
+        }
+
+        setFeedback({
+          kind: "error",
+          heading: "Não foi possível gerar a planilha:",
+          items
+        });
       } else if (exc instanceof ExcelServiceError) {
-        setFeedback({ kind: "error", items: [exc.message] });
+        setFeedback({
+          kind: "error",
+          items: [exc.message]
+        });
       } else {
-        console.error("Falha inesperada na geração:", exc instanceof Error ? exc.name : "erro");
-        setFeedback({ kind: "error", items: ["Ocorreu um erro inesperado ao gerar a planilha."] });
+        console.error(
+          "Falha inesperada na geração:",
+          exc instanceof Error ? exc.name : "erro"
+        );
+
+        setFeedback({
+          kind: "error",
+          items: ["Ocorreu um erro inesperado ao gerar a planilha."]
+        });
       }
     }
   }
 
+  // Interface ----------------------------------------------------------------
+
   return (
     <main className="page">
-      <h1 className="title">Atualizador de Promoções</h1>
 
+      {/* Cabeçalho e alternância de tema */}
+      <header className="header">
+        <h1 className="title">Atualizador de Promoções</h1>
+
+        <button
+          className="theme-toggle"
+          type="button"
+          onClick={handleThemeToggle}
+          aria-label={
+            theme === "light"
+              ? "Ativar tema escuro"
+              : "Ativar tema claro"
+          }
+          title={
+            theme === "light"
+              ? "Ativar tema escuro"
+              : "Ativar tema claro"
+          }
+        >
+          {theme === "light" ? "🌙" : "☀️"}
+        </button>
+      </header>
+
+      {/* Carregamento do modelo e conteúdo principal */}
       {template.status === "error" ? (
         <Message kind="error">{template.message}</Message>
       ) : (
         <>
+          {/* Campo para inserir os dados da consulta SQL Server */}
           <textarea
             className="input"
+            id="input"
             aria-label="Resultado da consulta SQL Server"
             placeholder="Cole aqui o resultado da consulta SQL Server"
             value={text}
@@ -91,13 +186,21 @@ export default function App() {
             wrap="off"
           />
 
-          <button className="button" type="button" onClick={handleGenerate} disabled={template.status !== "ready"}>
+          {/* Botão de geração e download da planilha */}
+          <button
+            className="button"
+            type="button"
+            onClick={handleGenerate}
+            disabled={template.status !== "ready"}
+          >
             Gerar e baixar planilha
           </button>
 
+          {/* Exibição de mensagens de erro */}
           {feedback?.kind === "error" && (
             <Message kind="error">
               {feedback.heading && <p>{feedback.heading}</p>}
+
               {feedback.items.length === 1 && !feedback.heading ? (
                 <p>{feedback.items[0]}</p>
               ) : (
@@ -110,14 +213,18 @@ export default function App() {
             </Message>
           )}
 
+          {/* Exibição de mensagens de sucesso e avisos */}
           {feedback?.kind === "success" && (
             <>
               <Message kind="success">
                 Planilha gerada com {feedback.count} registro(s): {feedback.filename}
               </Message>
+
+              {/* Avisos que não impediram a geração da planilha */}
               {feedback.warnings.length > 0 && (
                 <Message kind="warning">
                   <p>Avisos (não impediram a geração):</p>
+
                   <ul>
                     {feedback.warnings.map((w, i) => (
                       <li key={i}>{w}</li>
@@ -125,7 +232,13 @@ export default function App() {
                   </ul>
                 </Message>
               )}
-              <a className="fallback" href={feedback.url} download={feedback.filename}>
+
+              {/* Link alternativo para download da planilha */}
+              <a
+                className="fallback"
+                href={feedback.url}
+                download={feedback.filename}
+              >
                 Se o download não iniciar, clique aqui.
               </a>
             </>

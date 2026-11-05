@@ -1,16 +1,21 @@
+
 /* ==========================================================================
    Atualizador de Promoções — estilos
    Para mudar o visual, comece pelas variáveis em :root (cores, fonte, raios).
+   O tema escuro pode ser personalizado em :root[data-theme="dark"].
    ========================================================================== */
 
 :root {
-  /* Tema */
+  /* Tema claro (padrão) */
+  color-scheme: light;
+
   --color-bg: #ffffff;
   --color-text: #31333f;
   --color-muted: #808495;
   --color-primary: #2e5bff;
   --color-primary-hover: #0033e6;
   --color-input-bg: #f0f2f6;
+  --color-border: #e0e0e0;
 
   --color-success-bg: #e6f7ec;
   --color-success-text: #177233;
@@ -25,6 +30,30 @@
   --page-width: 46rem;
 }
 
+/* Tema escuro --------------------------------------------------------------- */
+/* Paleta inspirada na interface do ChatGPT, com fundo escuro e destaque verde. */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #212121;
+  --color-text: #ececec;
+  --color-muted: #a0a0a0;
+  --color-primary: #10a37f;
+  --color-primary-hover: #0d8c6d;
+  --color-input-bg: #2f2f2f;
+  --color-border: #424242;
+
+  --color-success-bg: #183b30;
+  --color-success-text: #b7f7d1;
+  --color-error-bg: #482626;
+  --color-error-text: #ffc5c5;
+  --color-warning-bg: #453a20;
+  --color-warning-text: #ffe29a;
+}
+
+/* Configurações gerais ------------------------------------------------------- */
+
 * {
   box-sizing: border-box;
 }
@@ -36,29 +65,74 @@ body {
   font-family: var(--font);
   font-size: 1rem;
   line-height: 1.5;
+
+  /* Transição suave entre os temas */
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Layout ------------------------------------------------------------------ */
+/* Layout -------------------------------------------------------------------- */
+
 .page {
   max-width: var(--page-width);
   margin: 0 auto;
   padding: 5rem 1.25rem 3rem;
 }
 
+/* Cabeçalho ----------------------------------------------------------------- */
+/* Organiza o título e o botão de alternância de tema na mesma linha. */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .title {
-  margin: 0 0 1rem;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.2;
 }
 
+/* Botão de alternância de tema ---------------------------------------------- */
+/* Permite alternar entre o tema claro e o tema escuro. */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-input-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-primary);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* Campo de texto ------------------------------------------------------------ */
+
 .input {
   display: block;
   width: 100%;
   height: 25rem;
   padding: 0.75rem;
-  border: 1px solid transparent;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-input-bg);
   color: inherit;
@@ -66,9 +140,13 @@ body {
   font-size: 0.9rem;
   resize: vertical;
   tab-size: 4;
+
   /* Sem quebra automática: cada linha visual é uma linha real (bate com os números dos erros). */
   white-space: pre;
   overflow: auto;
+
+  /* Transição suave de cores ao alternar o tema */
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .input::placeholder {
@@ -81,6 +159,7 @@ body {
 }
 
 /* Botão --------------------------------------------------------------------- */
+
 .button {
   margin-top: 1rem;
   padding: 0.5rem 0.9rem;
@@ -91,6 +170,7 @@ body {
   font: inherit;
   font-size: 0.9rem;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
@@ -107,7 +187,8 @@ body {
   cursor: not-allowed;
 }
 
-/* Mensagens ------------------------------------------------------------------ */
+/* Mensagens ----------------------------------------------------------------- */
+
 .message {
   margin-top: 1rem;
   padding: 1rem;
@@ -146,10 +227,28 @@ body {
   color: var(--color-warning-text);
 }
 
-/* Link de reserva do download --------------------------------------------------- */
+/* Link de reserva do download ----------------------------------------------- */
+
 .fallback {
   display: inline-block;
   margin-top: 1rem;
   color: var(--color-muted);
   font-size: 0.875rem;
+}
+
+/* Responsividade ------------------------------------------------------------ */
+/* Ajusta o espaçamento do conteúdo em telas menores. */
+
+@media (max-width: 600px) {
+  .page {
+    padding: 2.5rem 1rem 2rem;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .input {
+    height: 22rem;
+  }
 }
