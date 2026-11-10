@@ -20,13 +20,20 @@ type TemplateState =
 type Feedback =
   | {
       kind: "success";
+      id: number;
       format: "excel" | "pdf";
       filename: string;
       count: number;
       url?: string;
       warnings: string[];
     }
-  | { kind: "error"; heading?: string; items: string[] }
+  | {
+      kind: "error";
+      id: number;
+      format: "planilha" | "PDF";
+      heading?: string;
+      items: string[];
+    }
   | null;
 
 export default function App() {
@@ -35,8 +42,12 @@ export default function App() {
     status: "loading",
   });
   const [feedback, setFeedback] = useState<Feedback>(null);
+
   const currentUrl = useRef<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Identificador individual de cada tentativa de geração.
+  const feedbackId = useRef(0);
 
   // Tema --------------------------------------------------------------------
 
@@ -109,12 +120,49 @@ export default function App() {
     currentUrl.current = null;
   }
 
+  // Controle das mensagens --------------------------------------------------
+
+  // Inicia uma nova tentativa de geração.
+  // Encerra qualquer feedback anterior e libera URLs temporárias.
+  function beginGeneration() {
+    feedbackId.current += 1;
+
+    releaseUrl();
+    setFeedback(null);
+
+    return feedbackId.current;
+  }
+
+  // Mensagens de erro -------------------------------------------------------
+
+  // Remove mensagens de erro após 5 segundos.
+  useEffect(() => {
+    if (feedback?.kind !== "error") return;
+
+    const currentId = feedback.id;
+
+    const timeout = window.setTimeout(() => {
+      setFeedback((current) =>
+        current?.kind === "error" && current.id === currentId
+          ? null
+          : current
+      );
+    }, 5000);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [feedback]);
+
   // Entrada de dados --------------------------------------------------------
 
   function handleChange(value: string) {
     setText(value);
 
     if (feedback) {
+      // Invalida a mensagem anterior.
+      feedbackId.current += 1;
+
       releaseUrl();
       setFeedback(null);
     }
@@ -124,7 +172,8 @@ export default function App() {
 
   function handleGenerationError(
     exc: unknown,
-    format: "planilha" | "PDF"
+    format: "planilha" | "PDF",
+    attemptId: number
   ) {
     if (exc instanceof InvalidInput) {
       const items = [...exc.lines];
@@ -135,12 +184,16 @@ export default function App() {
 
       setFeedback({
         kind: "error",
+        id: attemptId,
+        format,
         heading: `Não foi possível gerar ${format}:`,
         items,
       });
     } else if (exc instanceof ExcelServiceError) {
       setFeedback({
         kind: "error",
+        id: attemptId,
+        format,
         items: [exc.message],
       });
     } else {
@@ -151,6 +204,8 @@ export default function App() {
 
       setFeedback({
         kind: "error",
+        id: attemptId,
+        format,
         items: [
           `Ocorreu um erro inesperado ao gerar o ${format}.`,
         ],
@@ -161,9 +216,9 @@ export default function App() {
   // Geração da planilha -----------------------------------------------------
 
   function handleGenerate() {
-    if (template.status !== "ready") return;
+    const attemptId = beginGeneration();
 
-    releaseUrl();
+    if (template.status !== "ready") return;
 
     try {
       const result = generateWorkbook(text, template.bytes);
@@ -175,6 +230,7 @@ export default function App() {
 
       setFeedback({
         kind: "success",
+        id: attemptId,
         format: "excel",
         filename: result.filename,
         count: result.recordCount,
@@ -182,14 +238,14 @@ export default function App() {
         warnings: result.warnings,
       });
     } catch (exc) {
-      handleGenerationError(exc, "planilha");
+      handleGenerationError(exc, "planilha", attemptId);
     }
   }
 
   // Geração do PDF ----------------------------------------------------------
 
   function handleGeneratePdf() {
-    releaseUrl();
+    const attemptId = beginGeneration();
 
     try {
       const result = validatePromotions(text);
@@ -199,13 +255,14 @@ export default function App() {
 
       setFeedback({
         kind: "success",
+        id: attemptId,
         format: "pdf",
         filename,
         count: result.records.length,
         warnings: result.warnings,
       });
     } catch (exc) {
-      handleGenerationError(exc, "PDF");
+      handleGenerationError(exc, "PDF", attemptId);
     }
   }
 
@@ -241,7 +298,7 @@ export default function App() {
             >
               🌙
             </span>
-            
+
             <span
               className={`theme-icon theme-icon-sun ${
                 theme === "light" ? "is-visible" : "is-hidden"
@@ -271,31 +328,31 @@ export default function App() {
         value={text}
         onChange={(e) => {
           handleChange(e.target.value);
-        
+
           const textarea = e.target;
-        
+
           // No celular, mantém a altura definida pelo CSS.
           if (window.matchMedia("(max-width: 600px)").matches) {
             textarea.style.height = "";
             textarea.style.overflowY = "auto";
             return;
           }
-        
+
           // No desktop, permite o crescimento automático.
           textarea.style.height = "auto";
-        
+
           const maxHeight = parseFloat(
             getComputedStyle(textarea).maxHeight
           );
-        
+
           const contentHeight = textarea.scrollHeight;
-        
+
           // Limita o crescimento à altura máxima definida no CSS.
           textarea.style.height = `${Math.min(
             contentHeight,
             maxHeight
           )}px`;
-        
+
           // Exibe a rolagem vertical somente quando necessário.
           textarea.style.overflowY =
             contentHeight > maxHeight ? "auto" : "hidden";
@@ -327,19 +384,24 @@ export default function App() {
 
       {/* Exibição de mensagens de erro */}
       {feedback?.kind === "error" && (
-        <Message kind="error">
-          {feedback.heading && <p>{feedback.heading}</p>}
+        <div
+          className="error-feedback"
+          key={feedback.id}
+        >
+          <Message kind="error">
+            {feedback.heading && <p>{feedback.heading}</p>}
 
-          {feedback.items.length === 1 && !feedback.heading ? (
-            <p>{feedback.items[0]}</p>
-          ) : (
-            <ul>
-              {feedback.items.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          )}
-        </Message>
+            {feedback.items.length === 1 && !feedback.heading ? (
+              <p>{feedback.items[0]}</p>
+            ) : (
+              <ul>
+                {feedback.items.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </Message>
+        </div>
       )}
 
       {/* Exibição de mensagens de sucesso e avisos */}
