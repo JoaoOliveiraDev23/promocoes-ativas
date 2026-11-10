@@ -412,10 +412,14 @@ body {
 /* 11. Notebooks e telas intermediárias
    ========================================================================== */
 
-@media (max-width: 900px) {
+@media (max-height: 1000px) {
   :root {
     --page-padding-y: 1.5rem;
-    --page-top-spacing: 20rem;
+    --page-top-spacing: 15rem;
+  }
+
+  .input {
+    max-height: calc(13.5em + 1.5rem + 2px);
   }
 }
 
