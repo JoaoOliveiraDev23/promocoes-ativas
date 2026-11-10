@@ -168,6 +168,42 @@ export default function App() {
     }
   }
 
+  // Posiciona o cursor no início da última linha após colar.
+  function handlePaste() {
+    requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+
+      if (!textarea) return;
+
+      const value = textarea.value;
+      const lastLineStart = value.lastIndexOf("\n") + 1;
+
+      textarea.focus();
+      textarea.setSelectionRange(lastLineStart, lastLineStart);
+
+      // Leva a rolagem horizontal e vertical até a posição do cursor.
+      const cursorPosition = textarea.selectionStart;
+
+      // Calcula a posição vertical do cursor.
+      const textBeforeCursor = value.slice(0, cursorPosition);
+      const linesBeforeCursor = textBeforeCursor.split("\n").length;
+
+      const lineHeight = parseFloat(
+        getComputedStyle(textarea).lineHeight
+      );
+
+      textarea.scrollTop = Math.max(
+        0,
+        (linesBeforeCursor - 1) * lineHeight
+      );
+
+      // Posiciona a rolagem horizontal no início da linha.
+      textarea.scrollLeft = 0;
+    });
+  }
+
+
+
   // Tratamento compartilhado de erros --------------------------------------
 
   function handleGenerationError(
@@ -357,6 +393,7 @@ export default function App() {
           textarea.style.overflowY =
             contentHeight > maxHeight ? "auto" : "hidden";
         }}
+        onPaste={handlePaste}
         spellCheck={false}
         wrap="off"
         rows={1}
